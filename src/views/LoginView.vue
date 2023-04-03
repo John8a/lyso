@@ -3,7 +3,7 @@
         <div class="login">
             <h2>Login</h2>
             <form @submit.prevent="login">
-                <p v-if="errMsg > 0" class="err-msg">{{ errMsg }}</p>
+                <p v-if="errMsg" class="err-msg">{{ errMsg }}</p>
                 <div class="form-control">
                     <input type="email" id="email" v-model="email"  @change="labelSettings()" />
                     <label for="email">Email</label>
@@ -17,7 +17,7 @@
                     <a href="/register">Don't have an account yet? Register!</a>
                 </div>
                 <div class="form-control">
-                    <button type="submit">Login</button>
+                    <button type="submit" @click="login()">Login</button>
                 </div>
                 <!-- forgot password -->
                 <div class="form-control">
@@ -31,7 +31,12 @@
 <script setup>
 import { ref } from 'vue'
 import { onMounted } from 'vue';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
+import { useRouter } from 'vue-router'
+import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 
+const db = getFirestore()
+const router = useRouter()
 let email = ref('')
 let password = ref('')
 let errMsg = ref('')
@@ -48,11 +53,31 @@ onMounted(() => {
 })
 
 // on submit firebase login
-const login = async () => {
+const login = () => {
     try {
-        // const res = await firebase.auth().signInWithEmailAndPassword(email.value, password.value)
-        const res = "test"
-        console.log(res)
+        signInWithEmailAndPassword(getAuth(), email.value, password.value)
+            .then(async (userCredential) => {
+                const user = userCredential.user;
+                await updateDoc(doc(db, 'users', user.uid), {
+                    last_login: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
+                }).then(() => {
+                    router.push('/')
+                }).catch((err) => {
+                    console.log(err)
+                    errMsg.value = "Something went wrong."
+                    router.push('/login')
+                })
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                if (errorCode === 'auth/wrong-password') {
+                    errMsg.value = 'Wrong password.'
+                } else {
+                    errMsg.value = errorMessage
+                }
+                router.push('/login')
+            });
     } catch (err) {
         errMsg.value = err.message
     }
@@ -81,19 +106,9 @@ const labelSettings = () => {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 121px);
     width: 100%;
     overflow: hidden;
-}
-
-.err-msg {
-    background-color: #f8d7da;
-    color: #721c24;
-    width: 100%;
-    padding: 10px;
-    text-align: center;
-    margin-bottom: 0.5rem;
-    border-radius: 5px;
 }
 
 .login {

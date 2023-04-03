@@ -7,10 +7,10 @@
                     d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
             </svg>
         </div>
-        <img :src="productImage" :alt="alt">
+        <img :src="productImage" :alt="title">
         <div class="description">
             <h2>{{ title }}</h2>
-            <p>{{ description }}</p>
+            <p>designed by {{ designer }}</p>
             <div class="price">
                 <h3>{{ price }}</h3>
             </div>
@@ -24,6 +24,11 @@
     height: 400px;
     position: relative;
     border: 1px solid #000;
+    cursor: pointer;
+    
+    &:hover {
+        background-color: rgba($color: #000000, $alpha: 0.02);
+    }
 
     .add-to-card {
         position: absolute;
@@ -51,7 +56,6 @@
         width: 100%;
         height: 280px;
         object-fit: cover;
-        border-radius: 10px 10px 0 0;
     }
 
     .description {
@@ -86,11 +90,17 @@
 <script>
 export default {
     props: {
-        productImage: {
+        availability: {
             type: String,
             required: true
         },
-        alt: {
+        designer: {
+            type: String,
+        },
+        shortDescription: {
+            type: String,
+        },
+        productImage: {
             type: String,
             required: true
         },
@@ -102,10 +112,6 @@ export default {
             type: String,
             default: 'All'
         },
-        description: {
-            type: String,
-            required: true
-        },
         price: {
             type: String,
             required: true
@@ -113,7 +119,15 @@ export default {
         productUrl: {
             type: String,
             required: true
-        }
+        },
+        onSale: {
+            type: Boolean,
+            default: false
+        },
+        salePrice: {
+            type: String,
+            default: null
+        },
     },
     methods: {
         openProductPage(productUrl) {

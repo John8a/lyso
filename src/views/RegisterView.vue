@@ -3,25 +3,24 @@
         <div class="login">
             <h2>Register</h2>
             <form @submit.prevent="register">
-                <p v-if="errMsg > 0" class="err-msg">{{ errMsg }}</p>
+                <p v-if="errMsg" class="err-msg">{{ errMsg }}</p>
                 <div class="form-control">
                     <input type="email" id="email" v-model="email"  @change="labelSettings()" />
                     <label for="email">Email</label>
                 </div>
                 <div class="form-control">
-                    <input type="text" id="username" v-model="username" @change="labelSettings()">
-                    <label for="username">Username</label>
+                    <input type="text" id="name" v-model="name" @change="labelSettings()">
+                    <label for="name">First Name</label>
                 </div>
                 <div class="form-control">
                     <input id="password" @change="labelSettings()" type="password" v-model="password" />
                     <label for="password">Password</label>
                 </div>
-                <!-- register button -->
                 <div class="form-control">
                     <a href="/login">Already have an account? Login!</a>
                 </div>
                 <div class="form-control">
-                    <button type="submit">Register</button>
+                    <button type="submit" @click="register()" id="inButton" ref="inButton">Register</button>
                 </div>
             </form>
         </div>
@@ -30,10 +29,20 @@
 
 <script setup>
 import { ref } from 'vue'
-import { onMounted } from 'vue';
+import { onMounted } from 'vue'
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"
+import { useRouter } from 'vue-router'
+// import { collection, addDoc, doc, setDoc } from 'firebase/firestore'
+import { doc, setDoc } from 'firebase/firestore'
+import { getFirestore } from "firebase/firestore"
+
+const db = getFirestore()
+const router = useRouter()
 
 let email = ref('')
 let password = ref('')
+let name = ref('')
+let inButton = ref('')
 let errMsg = ref('')
 
 onMounted(() => {
@@ -50,9 +59,37 @@ onMounted(() => {
 // on submit firebase login
 const register = async () => {
     try {
-        // const res = await firebase.auth().signInWithEmailAndPassword(email.value, password.value)
-        const res = "test"
-        console.log(res)
+        inButton.value.innerText = 'Loading...'
+        createUserWithEmailAndPassword(getAuth(), email.value, password.value)
+            .then(async (userCredential) => {
+                const newUser = {
+                    id: userCredential.user.uid,
+                    email: email.value,
+                    name: name.value,
+                    user_created: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
+                    last_login: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
+                }
+                // addDoc(collection(db, 'users'), newUser)
+                await setDoc(doc(db, 'users', newUser.id), newUser)
+                // store newUser in realtime database
+                inButton.value.innerText = 'Done!'
+                router.push('/')
+            })
+            .catch(async (error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                if (errorCode === 'auth/weak-password') {
+                    errMsg.value = 'The password has to have length of 6.'
+                } else if (errorCode === 'auth/email-already-in-use') {
+                    errMsg.value = 'Email already in use.'
+                } else if (errorCode === 'auth/invalid-email') {
+                    errMsg.value = 'Invalid email.'
+                } else {
+                    errMsg.value = errorMessage
+                }
+                inButton.value.innerText = 'Register'
+                router.push('/register')
+            });
     } catch (err) {
         errMsg.value = err.message
     }
@@ -60,14 +97,19 @@ const register = async () => {
 
 const labelSettings = () => {
     if (email.value.length > 0) {
-            document.querySelector('#email + label').classList.add('active')
-        } else {
-            document.querySelector('#email + label').classList.remove('active')
-        }
-        if (password.value.length > 0) {
-            document.querySelector('#password + label').classList.add('active')
-        } else {
-            document.querySelector('#password + label').classList.remove('active')
+        document.querySelector('#email + label').classList.add('active')
+    } else {
+        document.querySelector('#email + label').classList.remove('active')
+    }
+    if (password.value.length > 0) {
+        document.querySelector('#password + label').classList.add('active')
+    } else {
+        document.querySelector('#password + label').classList.remove('active')
+    }
+    if (name.value.length > 0) {
+        document.querySelector('#name + label').classList.add('active')
+    } else {
+        document.querySelector('#name + label').classList.remove('active')
     }
 }
 
@@ -81,7 +123,7 @@ const labelSettings = () => {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 121px);
     width: 100%;
     overflow: hidden;
 }

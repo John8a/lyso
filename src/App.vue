@@ -1,8 +1,7 @@
 <template>
-  <!-- <AppNavbar v-if="$route.name!='login'"/> -->
   <AppNavbar />
   <router-view />
-  <AppFooter v-if="$route.name!='login'"/>
+  <AppFooter v-if="$route.name != 'login' && $route.name != 'register'"/>
 </template>
 
 <script setup>
@@ -51,5 +50,15 @@ html {
 
 body {
   background-color: var(--primary-color);
+}
+
+.err-msg {
+    background-color: #f8d7da;
+    color: #721c24;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
 }
 </style>

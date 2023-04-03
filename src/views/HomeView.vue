@@ -6,23 +6,23 @@
   </div>
 
   <div class="new-in">
-    <h2>New In</h2>
+    <h2 @click="prod()">New In</h2>
     <div class="products">
       <div class="row">
-        <ProductCard :productUrl="'/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
-        <ProductCard :productUrl="'/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
-        <ProductCard :productUrl="'/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
-        <ProductCard :productUrl="'/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
+        <ProductCard v-for="product in lamps" :key="product" :designer="product.designer" :onSale="product.on_sale" :salePrice="product.sale_price" :productUrl="product.slug" :availability="product.availability" :productImage="product.image" :title="product.title" :shortDescription="product.short_description" :price="product.price"/>
+        <ProductCard :productUrl="'/product/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
+        <ProductCard :productUrl="'/product/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
+        <ProductCard :productUrl="'/product/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
       </div>  
       <div class="left-image-right-products">
         <div class="new-image">
           <h2>New In</h2>
         </div>
         <div class="quadrett">
-          <ProductCard :productUrl="'/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
-          <ProductCard :productUrl="'/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
-          <ProductCard :productUrl="'/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
-          <ProductCard :productUrl="'/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
+          <ProductCard :productUrl="'/product/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
+          <ProductCard :productUrl="'/product/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
+          <ProductCard :productUrl="'/product/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
+          <ProductCard :productUrl="'/product/lysolamp'" productImage="https://i.pinimg.com/originals/d6/7c/8a/d67c8af477d5441574144c3e506ee350.png" alt="Lamp white" title="Lysø Lamp" description="Bright Lamps designed by Michael Scott" price="$700 USD"/>
         </div>
       </div>
     </div>
@@ -31,6 +31,25 @@
 
 <script setup>
   import ProductCard from '../components/ProductCard.vue'
+  import { ref, onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { getFirestore, getDocs, collection } from 'firebase/firestore';
+
+  useRouter()
+  const db = getFirestore();
+  const lamps = ref([])
+
+  // get all lamps from firestore
+  const getLamps = async () => {
+    const query = await getDocs(collection(db, 'lamps'))
+    query.forEach((doc) => {
+        lamps.value.push(doc.data())
+    })
+  }
+  
+  onMounted(() => {
+    getLamps()
+  })
 </script>
 
 <style lang="scss">

@@ -28,6 +28,35 @@ const routes = [
       return import('../views/RegisterView.vue')
     }
   },
+  {
+    path: '/product/:id',
+    name: 'product',
+    component: function () {
+      return import('../views/ProductPage.vue')
+    }
+  },
+  {
+    path: '/cart',
+    name: 'cart',
+    component: function () {
+      return import('../views/CartView.vue')
+    }
+  },
+  {
+    path: '/sale',
+    name: 'sale',
+    component: function () {
+      return import('../views/SaleView.vue')
+    }
+  },
+  // make error page
+  {
+    path: '/:catchAll(.*)',
+    name: 'error',
+    component: function () {
+      return import('../views/ErrorView.vue')
+    }
+  }
 ]
 
 const router = createRouter({

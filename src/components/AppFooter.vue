@@ -1,5 +1,5 @@
 <template>
-    <footer class="footer">
+    <footer class="footer" id="footer">
         <div class="info">
             <h2>
                 <img src="../assets/logo.png" alt="logo" width="35" height="35">
@@ -7,14 +7,15 @@
                     Lysø Inc.
                 </span>
             </h2>
-            <p>Company Address</p>
-            <p>Company Phone</p>
-            <p>Company Email</p>
+            <p>John-Doe-Street 12, London</p>
+            <p>0049 170 955 0815</p>
+            <p>contact(at)lyso.com</p>
             <p>© All rights reserved</p>
         </div>
         <div class="footer-right">
             <div class="enter-email">
                 <h2>Get Notified!</h2>
+                <p v-if="errMsg" class="err-msg">{{ errMsg }}</p>
                 <div class="input-field">
                     <button @click="store_email()">Sub</button>
                     <input id="email" v-model="subemail" type="email">
@@ -32,6 +33,13 @@
 
 <script setup>
     import { ref } from 'vue'
+    import { useRouter } from 'vue-router'
+    import { getFirestore, collection, addDoc} from 'firebase/firestore';
+
+    const db = getFirestore()
+    const router = useRouter()
+    const errMsg = ref('')
+    const subemail = ref('')
 
     const socials = [
         {
@@ -52,16 +60,27 @@
         }
     ]
 
-    const subemail = ref('')
-
     // TODO: Store email in database
     // TODO: Add email validation
     // TODO: Fetch IP address
-    const store_email = () => {
+    const store_email = async () => {
+        subemail.value = subemail.value.toLowerCase()
+        alert(subemail.value)
         if (subemail.value.includes('@') && subemail.value.includes('.') && subemail.value.length > 5 && subemail.value.length < 50 && subemail.value.trim().includes(' ') == false && subemail.value.endsWith('@') == false && subemail.value.endsWith('.') == false) {
-            alert('store email')
+            await addDoc(collection(db, 'newsletter'), {
+                email: subemail.value,
+                sub_created: new Date().toLocaleDateString()
+            }).then(() => {
+                errMsg.value = ''
+                router.push('/')
+            }).catch((err) => {
+                console.log(err)
+                router.push('/#footer')
+                errMsg.value = 'Something went wrong, please try again later.'
+            })
         } else {
-            alert('Please enter an email')
+            router.push('/#footer')
+            errMsg.value = 'Please enter a valid email address.'
         }
     }
 
